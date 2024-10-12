@@ -1,4 +1,4 @@
-import {createSlice, current} from '@reduxjs/toolkit'; 
+import {createSlice} from '@reduxjs/toolkit'; 
 // Importing the necessary functions from Redux Toolkit. 'createSlice' is used to create a slice of the Redux state.
 
 const initialState = {
@@ -9,10 +9,10 @@ const initialState = {
 
 // Creating a user slice with the name 'user', defining the initial state and reducers.
 const userSlice = createSlice({
-    name: 'user',  // This slice is named 'user'.
-    initialState,  // The slice's initial state is defined above.
+    name: 'user',  
+    initialState,  
     
-    reducers: {    // Defining actions to modify the state.
+    reducers: {    
         
         // Action triggered when the sign-in process starts, sets loading to true.
         signInStart: (state) => {
