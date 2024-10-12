@@ -1,14 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart,signInFailure,signInSuccess } from '../redux/user/userSlice';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [error, setError] = useState(null); // For handling errors
-  const [loading, setLoading] = useState(false); // For loading state
+  const {loading,error}=useSelector((state=>state.user))
   const navigate = useNavigate(); // Correctly invoke the hook to get the navigate function
+  const dispatch=useDispatch();
 
   const handleChange = (e) => {
     setFormData({
@@ -20,7 +22,7 @@ const SignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default form submission behavior
     try {
-      setLoading(true); // Set loading state to true while fetching data
+      dispatch(signInStart());
       const res = await fetch('/api/auth/signin', { // Change endpoint to match sign-in logic
         method: 'POST',
         headers: {
@@ -31,17 +33,14 @@ const SignIn = () => {
 
       const data = await res.json(); // Parse the JSON response
       if (data.success === false) {
-        setError(data.message); // If sign-in failed, set error message
-        setLoading(false);
+        dispatch(signInFailure(data.message));
         return;
       }
       // Handle successful sign-in (e.g., navigate to another page)
-      setLoading(false); // Reset loading state
-      setError(null); // Clear any previous error
+      dispatch(signInSuccess(data));
       navigate('/'); // Navigate to the home page or another page after successful sign-in
     } catch (error) {
-      setLoading(false); // Reset loading state
-      setError(error.message); // Set error message if there's a fetch error
+      dispatch(signInFailure(error.message));
     }
   };
 
