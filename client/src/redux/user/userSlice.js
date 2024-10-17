@@ -44,11 +44,35 @@ const userSlice = createSlice({
             state.error=action.payload;
             state.loading=false;
         },
+        deleteUserStart: (state) => {
+            state.loading = true;
+          },
+          deleteUserSuccess: (state) => {
+            state.currentUser = null;
+            state.loading = false;
+            state.error = null;
+          },
+          deleteUserFailure: (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
+          },
     }
 });
 
 // Exporting the actions for use in dispatching.
-export const { signInStart, signInSuccess, signInFailure,updateUserStart,updateUserSuccess,updateUserFailure } = userSlice.actions;
+export const {
+    signInStart,
+    signInSuccess,
+    signInFailure,
+    updateUserFailure,
+    updateUserSuccess,
+    updateUserStart,
+    deleteUserFailure,
+    deleteUserSuccess,
+    deleteUserStart,
+    
+  } = userSlice.actions;
+  
 
 // Exporting the reducer function for integration into the Redux store.
 export default userSlice.reducer;
