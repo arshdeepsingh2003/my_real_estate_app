@@ -30,12 +30,25 @@ const userSlice = createSlice({
         signInFailure: (state, action) => {
             state.error = action.payload;  // The error message (payload) is stored in error.
             state.loading = false;         // Loading is set to false since the process has completed with an error.
-        }
+        },
+
+        updateUserStart:(state)=>{
+            state.loading=true;
+        },
+        updateUserSuccess:(state,action)=>{
+            state.currentUser=action.payload;
+            state.loading=false;
+            state.error=null;
+        },
+        updateUserFailure:(state,action)=>{
+            state.error=action.payload;
+            state.loading=false;
+        },
     }
 });
 
 // Exporting the actions for use in dispatching.
-export const { signInStart, signInSuccess, signInFailure } = userSlice.actions;
+export const { signInStart, signInSuccess, signInFailure,updateUserStart,updateUserSuccess,updateUserFailure } = userSlice.actions;
 
 // Exporting the reducer function for integration into the Redux store.
 export default userSlice.reducer;
