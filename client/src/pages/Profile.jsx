@@ -180,6 +180,7 @@ export default function Profile() {
         >
           {loading ? 'Loading...' : 'Update'}
         </button>
+        <a className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95' href='/create-listing'>Create Listing</a>
       </form>
       <div className='flex justify-between mt-5'>
         <span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete account</span>
