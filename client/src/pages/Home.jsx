@@ -11,7 +11,7 @@ export default function Home() {
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
   SwiperCore.use([Navigation]);
-  console.log(offerListings);
+
   useEffect(() => {
     const fetchOfferListings = async () => {
       try {
@@ -23,6 +23,7 @@ export default function Home() {
         console.log(error);
       }
     };
+
     const fetchRentListings = async () => {
       try {
         const res = await fetch('/api/listing/get?type=rent&limit=4');
@@ -43,59 +44,59 @@ export default function Home() {
         console.log(error);
       }
     };
+
     fetchOfferListings();
   }, []);
+
   return (
-    <div>
-      {/* top */}
-      <div className='flex flex-col gap-6 p-28 px-3 max-w-6xl mx-auto'>
-        <h1 className='text-slate-700 font-bold text-3xl lg:text-6xl'>
-          Find your next <span className='text-slate-500'>perfect</span>
-          <br />
-          place with ease
+    <div className="bg-gray-100 min-h-screen">
+      {/* Top section */}
+      <div className="flex flex-col items-center gap-4 py-16 px-6 max-w-6xl mx-auto text-center">
+        <h1 className="text-slate-800 font-bold text-4xl lg:text-6xl text-shadow-lg">
+          Find your next <span className="text-blue-600">perfect</span> place
         </h1>
-        <div className='text-gray-400 text-xs sm:text-sm'>
-          My_Estate is the best place to find your next perfect place to
-          live.
-          <br />
-          We have a wide range of properties for you to choose from.
-        </div>
+        <p className="text-gray-500 text-sm sm:text-lg max-w-lg">
+          My_Estate is the best place to find your next home. Explore our wide range of properties
+          for rent and sale, tailored to your preferences.
+        </p>
         <Link
-          to={'/search'}
-          className='text-xs sm:text-sm text-blue-800 font-bold hover:underline'
+          to="/search"
+          className="text-sm sm:text-base text-white font-bold bg-blue-600 px-6 py-2 rounded-full shadow-lg transition-transform hover:scale-105"
         >
-          Let's get started...
+          Let’s get started
         </Link>
       </div>
 
-      {/* swiper */}
-      <Swiper navigation>
-        {offerListings &&
-          offerListings.length > 0 &&
-          offerListings.map((listing) => (
-            <SwiperSlide>
+      {/* Swiper section */}
+      <div className="mb-10">
+        <Swiper navigation>
+          {offerListings.map((listing) => (
+            <SwiperSlide key={listing._id}>
               <div
                 style={{
                   background: `url(${listing.imageUrls[0]}) center no-repeat`,
                   backgroundSize: 'cover',
                 }}
-                className='h-[500px]'
-                key={listing._id}
-              ></div>
+                className="h-[500px] rounded-lg shadow-md overflow-hidden transition-transform transform hover:scale-105"
+              />
             </SwiperSlide>
           ))}
-      </Swiper>
+        </Swiper>
+      </div>
 
-      {/* listing results for offer, sale and rent */}
-
-      <div className='max-w-6xl mx-auto p-3 flex flex-col gap-8 my-10'>
+      {/* Listing results for offer, sale, and rent */}
+      <div className="max-w-6xl mx-auto p-3 flex flex-col gap-12 my-10">
         {offerListings && offerListings.length > 0 && (
-          <div className=''>
-            <div className='my-3'>
-              <h2 className='text-2xl font-semibold text-slate-600'>Recent offers</h2>
-              <Link className='text-sm text-blue-800 hover:underline' to={'/search?offer=true'}>Show more offers</Link>
+          <div>
+            <div className="my-5 flex items-center justify-between">
+              <h2 className="text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
+                Recent Offers
+              </h2>
+              <Link className="text-sm text-blue-600 hover:text-blue-800 hover:underline" to={'/search?offer=true'}>
+                Show more offers
+              </Link>
             </div>
-            <div className='flex flex-wrap gap-4'>
+            <div className="flex flex-wrap gap-4">
               {offerListings.map((listing) => (
                 <ListingItem listing={listing} key={listing._id} />
               ))}
@@ -103,12 +104,16 @@ export default function Home() {
           </div>
         )}
         {rentListings && rentListings.length > 0 && (
-          <div className=''>
-            <div className='my-3'>
-              <h2 className='text-2xl font-semibold text-slate-600'>Recent places for rent</h2>
-              <Link className='text-sm text-blue-800 hover:underline' to={'/search?type=rent'}>Show more places for rent</Link>
+          <div>
+            <div className="my-5 flex items-center justify-between">
+              <h2 className="text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
+                Recent Places for Rent
+              </h2>
+              <Link className="text-sm text-blue-600 hover:text-blue-800 hover:underline" to={'/search?type=rent'}>
+                Show more places for rent
+              </Link>
             </div>
-            <div className='flex flex-wrap gap-4'>
+            <div className="flex flex-wrap gap-4">
               {rentListings.map((listing) => (
                 <ListingItem listing={listing} key={listing._id} />
               ))}
@@ -116,12 +121,16 @@ export default function Home() {
           </div>
         )}
         {saleListings && saleListings.length > 0 && (
-          <div className=''>
-            <div className='my-3'>
-              <h2 className='text-2xl font-semibold text-slate-600'>Recent places for sale</h2>
-              <Link className='text-sm text-blue-800 hover:underline' to={'/search?type=sale'}>Show more places for sale</Link>
+          <div>
+            <div className="my-5 flex items-center justify-between">
+              <h2 className="text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
+                Recent Places for Sale
+              </h2>
+              <Link className="text-sm text-blue-600 hover:text-blue-800 hover:underline" to={'/search?type=sale'}>
+                Show more places for sale
+              </Link>
             </div>
-            <div className='flex flex-wrap gap-4'>
+            <div className="flex flex-wrap gap-4">
               {saleListings.map((listing) => (
                 <ListingItem listing={listing} key={listing._id} />
               ))}

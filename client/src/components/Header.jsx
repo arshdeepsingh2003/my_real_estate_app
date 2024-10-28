@@ -1,12 +1,13 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const { currentUser } = useSelector(state => state.user);
-  const[searchTerm,setSearchTerm]=useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const urlParams = new URLSearchParams(window.location.search);
@@ -14,6 +15,7 @@ const Header = () => {
     const searchQuery = urlParams.toString();
     navigate(`/search?${searchQuery}`);
   };
+
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const searchTermFromUrl = urlParams.get('searchTerm');
@@ -21,45 +23,41 @@ const Header = () => {
       setSearchTerm(searchTermFromUrl);
     }
   }, [location.search]);
-  
+
   return (
-    <header className="bg-slate-200 show-md">
-      <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
-        <a href="/">
-          <h1 className="font-bold text-sm sm:text-xl flex flex-wrap">
-            <span className="text-slate-500">Real</span>
-            <span className="text-slate-800">Estate</span>
-          </h1>
+    <header className="bg-gradient-to-r from-blue-200 to-blue-300 backdrop-blur-lg bg-white/50 rounded-lg shadow-md p-4 mx-auto mt-4 max-w-7xl">
+      <div className="flex justify-between items-center p-3">
+        <a href="/" className="text-2xl font-extrabold text-slate-900 flex">
+          <span className="text-blue-600">Real</span><span className="text-orange-600">Estate</span>
         </a>
-        <form onSubmit={handleSubmit} className="bg-slate-100 p-3 rounded-r-lg flex items-center">
+        <form 
+          onSubmit={handleSubmit} 
+          className="flex items-center bg-white/20 backdrop-blur-md rounded-full px-4 py-2 shadow-inner"
+        >
           <input 
             type="text" 
-            placeholder="search..." 
-            className="bg-transparent focus:outline-none w-24 sm:w-64"
+            placeholder="Search..." 
+            className="bg-transparent text-slate-900 placeholder-slate-500 focus:outline-none w-24 sm:w-64"
             value={searchTerm}
-            onChange={(e)=>setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button>
-          <FaSearch className="text-slate-600" />
+          <button type="submit" className="text-blue-600 ml-2">
+            <FaSearch />
           </button>
-          
         </form>
-        <ul className="flex gap-4">
-          <a href="/">
-            <li className="hidden sm:inline text-slate-700 hover:underline">Home</li>
-          </a>
-          <a href="/about">
-            <li className="hidden sm:inline text-slate-700 hover:underline">About</li>
-          </a>
+        <ul className="flex items-center gap-6 text-slate-900">
+          <a href="/" className="hidden sm:inline hover:text-blue-600">Home</a>
+          <a href="/about" className="hidden sm:inline hover:text-blue-600">About</a>
           <a href="/profile">
-          {currentUser ? (
-              <img className='rounded-full h-7 w-7 object-cover' src={currentUser.avatar}
-                alt='profile'
+            {currentUser ? (
+              <img
+                className="rounded-full h-8 w-8 border-2 border-white shadow-md"
+                src={currentUser.avatar}
+                alt="profile"
               />
             ) : (
-              <li className=' text-slate-700 hover:underline'> Sign in</li>
-            )
-            }
+              <span className="hover:text-blue-600">Sign In</span>
+            )}
           </a>
         </ul>
       </div>
