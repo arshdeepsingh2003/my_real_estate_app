@@ -48,48 +48,50 @@ const SignUp = () => {
   };
 
   return (
-    <div className="p-3 max-w-lg mx-auto">
-      <h1 className="text-3xl text-center font-bold my-7">Sign Up</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input 
-          type="text" 
-          placeholder="Username" 
-          className="border p-3 rounded-lg" 
-          id="username" 
-          value={formData.username} 
-          onChange={handleChange} 
-        />
-        <input 
-          type="email" 
-          placeholder="Email" 
-          className="border p-3 rounded-lg" 
-          id="email" 
-          value={formData.email} 
-          onChange={handleChange} 
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          className="border p-3 rounded-lg" 
-          id="password" 
-          value={formData.password} 
-          onChange={handleChange} 
-        />
-        <button 
-          disabled={loading} 
-          className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
-        >
-          {loading ? 'Loading...' : 'Sign Up'}
-        </button>
-        <OAuth/>
-      </form>
-      <div className="flex gap-2 mt-5">
-        <p>Have an Account?</p>
-        <Link to="/sign-in">
-          <span className="text-blue-800">Sign in</span>
-        </Link>
+    <div className="flex items-center justify-center mt-6 bg-gray-100"> {/* Full screen height and light background */}
+      <div className="bg-blue-50 shadow-md rounded-lg p-6 w-full max-w-md"> {/* Light blue background for the card */}
+        <h1 className="text-3xl text-center font-bold mb-4 text-blue-700">Sign Up</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input 
+            type="text" 
+            placeholder="Username" 
+            className="border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            id="username" 
+            value={formData.username} 
+            onChange={handleChange} 
+          />
+          <input 
+            type="email" 
+            placeholder="Email" 
+            className="border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            id="email" 
+            value={formData.email} 
+            onChange={handleChange} 
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            className="border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            id="password" 
+            value={formData.password} 
+            onChange={handleChange} 
+          />
+          <button 
+            disabled={loading} 
+            className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:bg-slate-600 disabled:opacity-80 transition"
+          >
+            {loading ? 'Loading...' : 'Sign Up'}
+          </button>
+          <OAuth />
+        </form>
+        <div className="flex gap-2 mt-5">
+          <p>Have an Account?</p>
+          <Link to="/sign-in">
+            <span className="text-blue-800 hover:underline">Sign In</span> {/* Added underline on hover */}
+          </Link>
+        </div>
+        {error && <p className="text-red-500 mt-5 text-center">{error}</p>} {/* Centered error message */}
       </div>
-      {error && <p className="text-red-500 mt-5">{error}</p>}
     </div>
   );
 };

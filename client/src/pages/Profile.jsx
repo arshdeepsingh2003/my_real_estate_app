@@ -18,6 +18,7 @@ import {
 } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+
 export default function Profile() {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -29,12 +30,6 @@ export default function Profile() {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
-
-  // firebase storage
-  // allow read;
-  // allow write: if
-  // request.resource.size < 2 * 1024 * 1024 &&
-  // request.resource.contentType.matches('image/.*')
 
   useEffect(() => {
     if (file) {
@@ -122,7 +117,7 @@ export default function Profile() {
       }
       dispatch(deleteUserSuccess(data));
     } catch (error) {
-      dispatch(deleteUserFailure(data.message));
+      dispatch(deleteUserFailure(error.message));
     }
   };
 
@@ -160,10 +155,11 @@ export default function Profile() {
       console.log(error.message);
     }
   };
+
   return (
-    <div className='p-3 max-w-lg mx-auto'>
-      <h1 className='text-3xl font-semibold text-center my-7'>Profile</h1>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+    <div className='p-5 max-w-lg mx-auto bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-md mt-6'>
+      <h1 className='text-2xl font-semibold text-center mb-4 text-blue-700'>Profile</h1>
+      <form onSubmit={handleSubmit} className='flex flex-col gap-3'>
         <input
           onChange={(e) => setFile(e.target.files[0])}
           type='file'
@@ -175,115 +171,76 @@ export default function Profile() {
           onClick={() => fileRef.current.click()}
           src={formData.avatar || currentUser.avatar}
           alt='profile'
-          className='rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2'
+          className='rounded-full h-24 w-24 object-cover cursor-pointer self-center border-4 border-blue-400 shadow-lg transform transition-transform duration-300 hover:scale-105'
         />
         <p className='text-sm self-center'>
           {fileUploadError ? (
-            <span className='text-red-700'>
-              Error Image upload (image must be less than 2 mb)
-            </span>
+            <span className='text-red-700'>Error uploading image (must be less than 2 MB)</span>
           ) : filePerc > 0 && filePerc < 100 ? (
             <span className='text-slate-700'>{`Uploading ${filePerc}%`}</span>
           ) : filePerc === 100 ? (
             <span className='text-green-700'>Image successfully uploaded!</span>
           ) : (
-            ''
+            <span className='text-gray-500'></span>
           )}
         </p>
         <input
           type='text'
-          placeholder='username'
+          placeholder='Username'
           defaultValue={currentUser.username}
           id='username'
-          className='border p-3 rounded-lg'
+          className='border p-2 rounded-md'
           onChange={handleChange}
         />
         <input
           type='email'
-          placeholder='email'
+          placeholder='Email'
           id='email'
           defaultValue={currentUser.email}
-          className='border p-3 rounded-lg'
+          className='border p-2 rounded-md'
           onChange={handleChange}
         />
         <input
           type='password'
-          placeholder='password'
+          placeholder='Password'
           onChange={handleChange}
           id='password'
-          className='border p-3 rounded-lg'
+          className='border p-2 rounded-md'
         />
         <button
           disabled={loading}
-          className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
+          className='bg-blue-600 text-white rounded-md p-2 hover:bg-blue-500 disabled:opacity-50'
         >
           {loading ? 'Loading...' : 'Update'}
         </button>
         <Link
-          className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'
+          className='bg-green-600 text-white p-2 rounded-md text-center hover:bg-green-500'
           to={'/create-listing'}
         >
           Create Listing
         </Link>
       </form>
+      
       <div className='flex justify-between mt-5'>
-        <span
-          onClick={handleDeleteUser}
-          className='text-red-700 cursor-pointer'
-        >
-          Delete account
-        </span>
-        <span onClick={handleSignOut} className='text-red-700 cursor-pointer'>
-          Sign out
-        </span>
+        <span onClick={handleDeleteUser} className='text-red-600 cursor-pointer'>Delete Account</span>
+        <span onClick={handleSignOut} className='text-red-600 cursor-pointer'>Sign Out</span>
       </div>
 
-      <p className='text-red-700 mt-5'>{error ? error : ''}</p>
-      <p className='text-green-700 mt-5'>
-        {updateSuccess ? 'User is updated successfully!' : ''}
-      </p>
-      <button onClick={handleShowListings} className='text-green-700 w-full'>
-        Show Listings
-      </button>
-      <p className='text-red-700 mt-5'>
-        {showListingsError ? 'Error showing listings' : ''}
-      </p>
-
+      <p className='text-red-600 mt-5'>{error}</p>
+      <p className='text-green-600 mt-5'>{updateSuccess && 'Profile updated successfully!'}</p>
+      
+      <button onClick={handleShowListings} className='text-blue-600 w-full mt-5'>Show Listings</button>
+      {showListingsError && <p className='text-red-600 mt-5'>Error showing listings</p>}
+      
       {userListings && userListings.length > 0 && (
-        <div className='flex flex-col gap-4'>
-          <h1 className='text-center mt-7 text-2xl font-semibold'>
-            Your Listings
-          </h1>
+        <div className='mt-5'>
+          <h2 className='text-xl font-semibold text-center mb-3'>Your Listings</h2>
           {userListings.map((listing) => (
-            <div
-              key={listing._id}
-              className='border rounded-lg p-3 flex justify-between items-center gap-4'
-            >
-              <Link to={`/listing/${listing._id}`}>
-                <img
-                  src={listing.imageUrls[0]}
-                  alt='listing cover'
-                  className='h-16 w-16 object-contain'
-                />
+            <div key={listing._id} className='border rounded-md p-2 mb-2 flex justify-between items-center bg-white shadow-sm'>
+              <Link to={`/listing/${listing._id}`} className='text-blue-600 hover:underline'>
+                {listing.name}
               </Link>
-              <Link
-                className='text-slate-700 font-semibold  hover:underline truncate flex-1'
-                to={`/listing/${listing._id}`}
-              >
-                <p>{listing.name}</p>
-              </Link>
-
-              <div className='flex flex-col item-center'>
-                <button
-                  onClick={() => handleListingDelete(listing._id)}
-                  className='text-red-700 uppercase'
-                >
-                  Delete
-                </button>
-                <Link to={`/update-listing/${listing._id}`}>
-                  <button className='text-green-700 uppercase'>Edit</button>
-                </Link>
-              </div>
+              <span onClick={() => handleListingDelete(listing._id)} className='text-red-600 cursor-pointer'>Delete</span>
             </div>
           ))}
         </div>
