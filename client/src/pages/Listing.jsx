@@ -1,137 +1,134 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import SwiperCore from 'swiper';
 import { useSelector } from 'react-redux';
-import { Navigation } from 'swiper/modules';
-import 'swiper/css/bundle';
 import {
   FaBath,
   FaBed,
   FaChair,
-  FaMapMarkedAlt,
   FaMapMarkerAlt,
   FaParking,
   FaShare,
 } from 'react-icons/fa';
 import Contact from '../components/Contact';
 
-// https://sabe.io/blog/javascript-format-numbers-commas#:~:text=The%20best%20way%20to%20format,format%20the%20number%20with%20commas.
-
 export default function Listing() {
-  SwiperCore.use([Navigation]);
   const [listing, setListing] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const params = useParams();
   const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        setLoading(true);
         const res = await fetch(`/api/listing/get/${params.listingId}`);
         const data = await res.json();
         if (data.success === false) {
           setError(true);
-          setLoading(false);
           return;
         }
         setListing(data);
-        setLoading(false);
-        setError(false);
-      } catch (error) {
+      } catch {
         setError(true);
+      } finally {
         setLoading(false);
       }
     };
     fetchListing();
   }, [params.listingId]);
 
+  const handleThumbnailClick = (index) => {
+    setActiveIndex(index);
+  };
+
   return (
-    <main>
+    <main className='bg-gray-50 min-h-screen'>
       {loading && <p className='text-center my-7 text-2xl'>Loading...</p>}
       {error && (
-        <p className='text-center my-7 text-2xl'>Something went wrong!</p>
+        <p className='text-center my-7 text-2xl text-red-500'>Something went wrong!</p>
       )}
-      {listing && !loading && !error && (
-        <div>
-          <Swiper navigation>
-            {listing.imageUrls.map((url) => (
-              <SwiperSlide key={url}>
-                <div
-                  className='h-[550px]'
-                  style={{
-                    background: `url(${url}) center no-repeat`,
-                    backgroundSize: 'cover',
-                  }}
-                ></div>
-              </SwiperSlide>
+      {listing && (
+        <div className='max-w-4xl mx-auto p-4'>
+          {/* Main Image Display */}
+          <img
+            src={listing.imageUrls[activeIndex]}
+            alt={listing.name}
+            className='h-[550px] w-full rounded-lg shadow-lg mb-4'
+          />
+
+          {/* Thumbnails */}
+          <div className='flex gap-2 mb-4'>
+            {listing.imageUrls.map((url, index) => (
+              <img
+                key={url}
+                onClick={() => handleThumbnailClick(index)}
+                src={url}
+                alt={`Thumbnail ${index + 1}`}
+                className={`h-[100px] w-full rounded-lg shadow-lg cursor-pointer ${
+                  activeIndex === index ? 'opacity-100' : 'opacity-60'
+                }`}
+              />
             ))}
-          </Swiper>
-          <div className='fixed top-[13%] right-[3%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-slate-100 cursor-pointer'>
+          </div>
+
+          <div className='fixed top-[10%] right-[3%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg cursor-pointer transition-transform transform hover:scale-110'>
             <FaShare
-              className='text-slate-500'
+              className='text-gray-600'
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
                 setCopied(true);
-                setTimeout(() => {
-                  setCopied(false);
-                }, 2000);
+                setTimeout(() => setCopied(false), 2000);
               }}
             />
           </div>
           {copied && (
-            <p className='fixed top-[23%] right-[5%] z-10 rounded-md bg-slate-100 p-2'>
+            <p className='fixed top-[20%] right-[5%] z-10 rounded-md bg-white p-2 shadow-md'>
               Link copied!
             </p>
           )}
-          <div className='flex flex-col max-w-4xl mx-auto p-3 my-7 gap-4'>
-            <p className='text-2xl font-semibold'>
+          <div className='bg-white p-6 rounded-lg shadow-md my-7'>
+            <p className='text-3xl font-bold text-gray-800'>
               {listing.name} - ${' '}
               {listing.offer
                 ? listing.discountPrice.toLocaleString('en-US')
                 : listing.regularPrice.toLocaleString('en-US')}
               {listing.type === 'rent' && ' / month'}
             </p>
-            <p className='flex items-center mt-6 gap-2 text-slate-600  text-sm'>
+            <p className='flex items-center mt-4 gap-2 text-gray-600 text-sm'>
               <FaMapMarkerAlt className='text-green-700' />
               {listing.address}
             </p>
-            <div className='flex gap-4'>
-              <p className='bg-red-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
+            <div className='flex gap-4 mt-3'>
+              <p className='bg-red-600 w-full max-w-[200px] text-white text-center p-2 rounded-md'>
                 {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
               </p>
               {listing.offer && (
-                <p className='bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
+                <p className='bg-green-600 w-full max-w-[200px] text-white text-center p-2 rounded-md'>
                   ${+listing.regularPrice - +listing.discountPrice} OFF
                 </p>
               )}
             </div>
-            <p className='text-slate-800'>
+            <p className='text-gray-800 mt-4'>
               <span className='font-semibold text-black'>Description - </span>
               {listing.description}
             </p>
-            <ul className='text-green-900 font-semibold text-sm flex flex-wrap items-center gap-4 sm:gap-6'>
-              <li className='flex items-center gap-1 whitespace-nowrap '>
+            <ul className='text-green-900 font-semibold text-sm flex flex-wrap items-center gap-4 sm:gap-6 mt-3'>
+              <li className='flex items-center gap-1 whitespace-nowrap'>
                 <FaBed className='text-lg' />
-                {listing.bedrooms > 1
-                  ? `${listing.bedrooms} beds `
-                  : `${listing.bedrooms} bed `}
+                {listing.bedrooms} {listing.bedrooms > 1 ? 'beds' : 'bed'}
               </li>
-              <li className='flex items-center gap-1 whitespace-nowrap '>
+              <li className='flex items-center gap-1 whitespace-nowrap'>
                 <FaBath className='text-lg' />
-                {listing.bathrooms > 1
-                  ? `${listing.bathrooms} baths `
-                  : `${listing.bathrooms} bath `}
+                {listing.bathrooms} {listing.bathrooms > 1 ? 'baths' : 'bath'}
               </li>
-              <li className='flex items-center gap-1 whitespace-nowrap '>
+              <li className='flex items-center gap-1 whitespace-nowrap'>
                 <FaParking className='text-lg' />
                 {listing.parking ? 'Parking spot' : 'No Parking'}
               </li>
-              <li className='flex items-center gap-1 whitespace-nowrap '>
+              <li className='flex items-center gap-1 whitespace-nowrap'>
                 <FaChair className='text-lg' />
                 {listing.furnished ? 'Furnished' : 'Unfurnished'}
               </li>
@@ -139,7 +136,7 @@ export default function Listing() {
             {currentUser && listing.userRef !== currentUser._id && !contact && (
               <button
                 onClick={() => setContact(true)}
-                className='bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3'
+                className='mt-4 bg-blue-600 text-white rounded-lg uppercase hover:bg-blue-500 transition p-3'
               >
                 Contact landlord
               </button>
