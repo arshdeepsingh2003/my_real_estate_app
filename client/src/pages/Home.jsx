@@ -77,7 +77,7 @@ export default function Home() {
                   background: `url(${listing.imageUrls[0]}) center no-repeat`,
                   backgroundSize: 'cover',
                 }}
-                className="h-[500px] rounded-lg shadow-md overflow-hidden transition-transform transform hover:scale-105"
+                className="h-[300px] sm:h-[400px] md:h-[500px] rounded-lg shadow-md overflow-hidden transition-transform transform hover:scale-105"
               />
             </SwiperSlide>
           ))}
@@ -89,7 +89,7 @@ export default function Home() {
         {offerListings && offerListings.length > 0 && (
           <div>
             <div className="my-5 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
                 Recent Offers
               </h2>
               <Link className="text-sm text-blue-600 hover:text-blue-800 hover:underline" to={'/search?offer=true'}>
@@ -106,7 +106,7 @@ export default function Home() {
         {rentListings && rentListings.length > 0 && (
           <div>
             <div className="my-5 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
                 Recent Places for Rent
               </h2>
               <Link className="text-sm text-blue-600 hover:text-blue-800 hover:underline" to={'/search?type=rent'}>
@@ -123,7 +123,7 @@ export default function Home() {
         {saleListings && saleListings.length > 0 && (
           <div>
             <div className="my-5 flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
                 Recent Places for Sale
               </h2>
               <Link className="text-sm text-blue-600 hover:text-blue-800 hover:underline" to={'/search?type=sale'}>

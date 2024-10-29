@@ -56,25 +56,26 @@ export default function Listing() {
           <img
             src={listing.imageUrls[activeIndex]}
             alt={listing.name}
-            className='h-[550px] w-full rounded-lg shadow-lg mb-4'
+            className='h-[450px] w-full rounded-lg shadow-lg mb-4 object-cover'
           />
 
           {/* Thumbnails */}
-          <div className='flex gap-2 mb-4'>
+          <div className='flex justify-center items-center overflow-x-auto gap-2 mb-4'>
             {listing.imageUrls.map((url, index) => (
               <img
                 key={url}
                 onClick={() => handleThumbnailClick(index)}
                 src={url}
                 alt={`Thumbnail ${index + 1}`}
-                className={`h-[100px] w-full rounded-lg shadow-lg cursor-pointer ${
+                className={`h-[80px] sm:h-[100px] w-auto rounded-lg shadow-lg cursor-pointer transition-opacity duration-200 ${
                   activeIndex === index ? 'opacity-100' : 'opacity-60'
                 }`}
               />
             ))}
           </div>
 
-          <div className='fixed top-[10%] right-[3%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg cursor-pointer transition-transform transform hover:scale-110'>
+         
+          <div className='fixed top-[18%] right-[25%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg cursor-pointer transition-transform transform hover:scale-110'>
             <FaShare
               className='text-gray-600'
               onClick={() => {
@@ -89,8 +90,10 @@ export default function Listing() {
               Link copied!
             </p>
           )}
+
+      
           <div className='bg-white p-6 rounded-lg shadow-md my-7'>
-            <p className='text-3xl font-bold text-gray-800'>
+            <p className='text-2xl sm:text-3xl font-bold text-gray-800'>
               {listing.name} - ${' '}
               {listing.offer
                 ? listing.discountPrice.toLocaleString('en-US')
