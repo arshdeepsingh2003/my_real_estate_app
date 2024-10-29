@@ -53,11 +53,32 @@ export default function Listing() {
       {listing && (
         <div className='max-w-4xl mx-auto p-4'>
           {/* Main Image Display */}
-          <img
-            src={listing.imageUrls[activeIndex]}
-            alt={listing.name}
-            className='h-[450px] w-full rounded-lg shadow-lg mb-4 object-cover'
-          />
+          <div className="relative">
+            <img
+              src={listing.imageUrls[activeIndex]}
+              alt={listing.name}
+              className='h-[450px] w-full rounded-lg shadow-lg mb-4 object-cover'
+            />
+
+            {/* Share Icon */}
+            <div className='absolute top-5 right-5 z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg cursor-pointer transition-transform transform hover:scale-110'>
+              <FaShare
+                className='text-gray-600'
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              />
+            </div>
+
+            {/* Link Copied Notification */}
+            {copied && (
+              <p className='absolute top-16 right-5 z-10 rounded-md bg-white p-2 shadow-md'>
+                Link copied!
+              </p>
+            )}
+          </div>
 
           {/* Thumbnails */}
           <div className='flex justify-center items-center overflow-x-auto gap-2 mb-4'>
@@ -74,24 +95,6 @@ export default function Listing() {
             ))}
           </div>
 
-         
-          <div className='fixed top-[18%] right-[25%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg cursor-pointer transition-transform transform hover:scale-110'>
-            <FaShare
-              className='text-gray-600'
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-            />
-          </div>
-          {copied && (
-            <p className='fixed top-[20%] right-[5%] z-10 rounded-md bg-white p-2 shadow-md'>
-              Link copied!
-            </p>
-          )}
-
-      
           <div className='bg-white p-6 rounded-lg shadow-md my-7'>
             <p className='text-2xl sm:text-3xl font-bold text-gray-800'>
               {listing.name} - ${' '}
