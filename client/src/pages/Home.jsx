@@ -110,7 +110,7 @@ export default function Home() {
                 Recent Places for Rent
               </h2>
               <Link className="text-sm text-blue-600 hover:text-blue-800 hover:underline" to={'/search?type=rent'}>
-                Show more places for rent
+                Show more
               </Link>
             </div>
             <div className="flex flex-wrap gap-4">
@@ -122,12 +122,12 @@ export default function Home() {
         )}
         {saleListings && saleListings.length > 0 && (
           <div>
-            <div className="my-5 flex items-center justify-between">
+            <div className=" my-5 flex items-center justify-between">
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 underline decoration-blue-500 decoration-2 underline-offset-4 shadow-lg">
                 Recent Places for Sale
               </h2>
               <Link className="text-sm text-blue-600 hover:text-blue-800 hover:underline" to={'/search?type=sale'}>
-                Show more places for sale
+                Show more
               </Link>
             </div>
             <div className="flex flex-wrap gap-4">

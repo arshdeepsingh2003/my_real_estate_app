@@ -8,6 +8,8 @@ import {
   FaMapMarkerAlt,
   FaParking,
   FaShare,
+  FaChevronLeft,
+  FaChevronRight,
 } from 'react-icons/fa';
 import Contact from '../components/Contact';
 
@@ -44,6 +46,18 @@ export default function Listing() {
     setActiveIndex(index);
   };
 
+  const nextImage = () => {
+    setActiveIndex((prevIndex) =>
+      prevIndex === listing.imageUrls.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const prevImage = () => {
+    setActiveIndex((prevIndex) =>
+      prevIndex === 0 ? listing.imageUrls.length - 1 : prevIndex - 1
+    );
+  };
+
   return (
     <main className='bg-gray-50 min-h-screen'>
       {loading && <p className='text-center my-7 text-2xl'>Loading...</p>}
@@ -60,7 +74,21 @@ export default function Listing() {
               className='h-[450px] w-full rounded-lg shadow-lg mb-4 object-cover'
             />
 
-            {/* Share Icon */}
+            
+            <button
+              onClick={prevImage}
+              className="absolute top-1/2 left-4 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition"
+            >
+              <FaChevronLeft className="text-gray-600" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute top-1/2 right-4 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition"
+            >
+              <FaChevronRight className="text-gray-600" />
+            </button>
+
+         
             <div className='absolute top-5 right-5 z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-white shadow-lg cursor-pointer transition-transform transform hover:scale-110'>
               <FaShare
                 className='text-gray-600'
@@ -72,7 +100,7 @@ export default function Listing() {
               />
             </div>
 
-            {/* Link Copied Notification */}
+            
             {copied && (
               <p className='absolute top-16 right-5 z-10 rounded-md bg-white p-2 shadow-md'>
                 Link copied!
@@ -80,7 +108,6 @@ export default function Listing() {
             )}
           </div>
 
-          {/* Thumbnails */}
           <div className='flex justify-center items-center overflow-x-auto gap-2 mb-4'>
             {listing.imageUrls.map((url, index) => (
               <img
