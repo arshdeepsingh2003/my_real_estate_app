@@ -6,7 +6,7 @@ export default defineConfig({
     port: 3001,
     proxy: {
       '/api': {
-        target: 'https://my-real-estate-app-pyjg.vercel.app/', 
+        target: 'https://my-real-estate-app-pyjg.vercel.app', 
         changeOrigin: true,
         secure: true,
       },
