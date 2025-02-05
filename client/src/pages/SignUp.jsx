@@ -23,7 +23,7 @@ const SignUp = () => {
     e.preventDefault(); // Prevent the default form submission behavior
     try {
       setLoading(true); // Set loading state to true while fetching data
-      const res = await fetch('https://my-real-estate-app-pyjg.vercel.app/api/auth/signup', {
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json', // Set headers to send JSON data

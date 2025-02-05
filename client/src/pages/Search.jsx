@@ -52,7 +52,7 @@ export default function Search() {
       setLoading(true);
       setShowMore(false);
       const searchQuery = urlParams.toString();
-      const res = await fetch(`https://my-real-estate-app-pyjg.vercel.app/api/listing/get?${searchQuery}`);
+      const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
       setShowMore(data.length > 8);
       setListings(data);
@@ -87,7 +87,7 @@ export default function Search() {
     const numberOfListings = listings.length;
     const urlParams = new URLSearchParams(location.search);
     urlParams.set('startIndex', numberOfListings);
-    const res = await fetch(`https://my-real-estate-app-pyjg.vercel.app/api/listing/get?${urlParams}`);
+    const res = await fetch(`/api/listing/get?${urlParams}`);
     const data = await res.json();
     setListings([...listings, ...data]);
     setShowMore(data.length >= 9);
