@@ -6,7 +6,7 @@ export default defineConfig({
   port:3001,  
   proxy:{
     '/api':
-    {target:'https://my-real-estate-app.onrender.com',
+    {target:'http://localhost:3000',
     secure:false,
     },
   },
