@@ -52,8 +52,8 @@ router.post('/create', verifyToken, createListing);
 router.post('/upload', verifyToken, uploadImagesMiddleware, uploadImages);
 router.delete('/delete/:id', verifyToken, deleteListing);
 router.post('/update/:id', verifyToken, updateListing);
-router.get('/get/:id', getListing);
-router.get('/get', getListings); // for search
-router.post('/:listingId/enquiry', enquiryLimiter, sendEnquiry);
+router.get('/get/:id', verifyToken, getListing);
+router.get('/get', verifyToken, getListings); // for search
+router.post('/:listingId/enquiry', verifyToken, enquiryLimiter, sendEnquiry);
 
 export default router;
