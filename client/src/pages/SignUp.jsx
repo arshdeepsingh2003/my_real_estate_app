@@ -1,13 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useSignUp } from '@clerk/clerk-react';
 import OAuth from '../components/OAuth';
 
 const SignUp = () => {
+  const { isLoaded, signUp, setActive } = useSignUp();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: ''
   });
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const [error, setError] = useState(null); // For handling errors
   const [loading, setLoading] = useState(false); // For loading state
   const navigate = useNavigate(); // Correctly invoke the hook to get the navigate function
@@ -21,31 +25,89 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default form submission behavior
+    if (!isLoaded) return;
     try {
       setLoading(true); // Set loading state to true while fetching data
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json', // Set headers to send JSON data
-        },
-        body: JSON.stringify(formData), // Convert formData to JSON for request
+      setError(null);
+
+      const result = await signUp.create({
+        emailAddress: formData.email,
+        password: formData.password,
+        username: formData.username,
       });
 
-      const data = await res.json(); // Parse the JSON response
-      if (data.success === false) {
-        setError(data.message); // If signup failed, set error message
-        setLoading(false);
-        return;
+      if (result.status === 'missing_requirements' && result.unverifiedFields.includes('email_address')) {
+        await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+        setPendingVerification(true);
+      } else if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        navigate('/');
+      } else {
+        console.warn('Sign-up status incomplete:', result.status);
+        setError('Verification or additional steps required.');
       }
-      // Handle successful signup (e.g., navigate to another page)
-      setLoading(false); // Reset loading state
-      setError(null); // Clear any previous error
-      navigate('/sign-in'); // Navigate to the sign-in page
-    } catch (error) {
-      setLoading(false); // Reset loading state
-      setError(error.message); // Set error message if there's a fetch error
+    } catch (err) {
+      console.error(err);
+      setError(err.errors ? err.errors[0].message : err.message);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleVerifySubmit = async (e) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+    try {
+      setLoading(true);
+      setError(null);
+
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code: verificationCode,
+      });
+
+      if (completeSignUp.status === 'complete') {
+        await setActive({ session: completeSignUp.createdSessionId });
+        navigate('/');
+      } else {
+        console.warn('Verification incomplete status:', completeSignUp.status);
+        setError('Verification failed. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.errors ? err.errors[0].message : err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (pendingVerification) {
+    return (
+      <div className="flex items-center justify-center mt-6 bg-gray-100">
+        <div className="bg-blue-50 shadow-md rounded-lg p-6 w-full max-w-md">
+          <h1 className="text-3xl text-center font-bold mb-4 text-blue-700">Verify Email</h1>
+          <form onSubmit={handleVerifySubmit} className="flex flex-col gap-4">
+            <p className="text-center text-gray-600">Please enter the 6-digit verification code sent to your email.</p>
+            <input 
+              type="text" 
+              placeholder="Verification Code" 
+              className="border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" 
+              id="verificationCode" 
+              value={verificationCode} 
+              onChange={(e) => setVerificationCode(e.target.value)} 
+              required
+            />
+            <button 
+              disabled={loading} 
+              className="bg-blue-600 text-white p-3 rounded-lg uppercase hover:bg-blue-500 disabled:opacity-80 transition"
+            >
+              {loading ? 'Verifying...' : 'Verify'}
+            </button>
+          </form>
+          {error && <p className="text-red-500 mt-5 text-center">{error}</p>}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center mt-6 bg-gray-100"> {/* Full screen height and light background */}
@@ -59,6 +121,7 @@ const SignUp = () => {
             id="username" 
             value={formData.username} 
             onChange={handleChange} 
+            required
           />
           <input 
             type="email" 
@@ -67,6 +130,7 @@ const SignUp = () => {
             id="email" 
             value={formData.email} 
             onChange={handleChange} 
+            required
           />
           <input 
             type="password" 
@@ -75,6 +139,7 @@ const SignUp = () => {
             id="password" 
             value={formData.password} 
             onChange={handleChange} 
+            required
           />
           <button 
             disabled={loading} 

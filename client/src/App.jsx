@@ -11,30 +11,34 @@ import UpdateListing from './pages/UpdateListing';
 import Listing from './pages/Listing';
 import Search from './pages/Search';
 import Footer from './pages/Footer';
-
+import ClerkUserSync from './components/ClerkUserSync';
+import { AuthenticateWithRedirectCallback } from '@clerk/clerk-react';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='/sign-in' element={<SignIn />} />
-            <Route path='/sign-up' element={<SignUp />} />
-            <Route path='/about' element={<About />} />
-            <Route path='/listing/:listingId' element={<Listing />} />
-            <Route path='/search' element={<Search />} />
-            <Route element={<PrivateRoute />}>
-              <Route path='/profile' element={<Profile />} />
-              <Route path='/create-listing' element={<CreateListing />} />
-              <Route path='/update-listing/:listingId' element={<UpdateListing />} />
-            </Route>
-          </Routes>
-        </main>
-        <Footer/>
-      </div>
+      <ClerkUserSync>
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main className="flex-grow pt-20">
+            <Routes>
+              <Route path='/' element={<Home />} />
+              <Route path='/sign-in' element={<SignIn />} />
+              <Route path='/sign-up' element={<SignUp />} />
+              <Route path='/about' element={<About />} />
+              <Route path='/listing/:listingId' element={<Listing />} />
+              <Route path='/search' element={<Search />} />
+              <Route path='/sso-callback' element={<AuthenticateWithRedirectCallback />} />
+              <Route element={<PrivateRoute />}>
+                <Route path='/profile' element={<Profile />} />
+                <Route path='/create-listing' element={<CreateListing />} />
+                <Route path='/update-listing/:listingId' element={<UpdateListing />} />
+              </Route>
+            </Routes>
+          </main>
+          <Footer/>
+        </div>
+      </ClerkUserSync>
     </BrowserRouter>
   );
 }

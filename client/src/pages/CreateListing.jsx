@@ -1,11 +1,4 @@
 import { useState } from 'react';
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from 'firebase/storage';
-import { app } from '../firebase';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,52 +29,41 @@ export default function CreateListing() {
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
       setUploading(true);
       setImageUploadError('');
-      const promises = [];
-
+      const data = new FormData();
       for (let i = 0; i < files.length; i++) {
-        promises.push(storeImage(files[i]));
+        data.append('images', files[i]);
       }
 
-      Promise.all(promises)
-        .then((urls) => {
+      fetch('/api/listing/upload?type=listing', {
+        method: 'POST',
+        body: data,
+      })
+        .then((res) => {
+          if (!res.ok) {
+            return res.json().then((err) => {
+              throw new Error(err.message || 'Image upload failed');
+            });
+          }
+          return res.json();
+        })
+        .then((data) => {
           setFormData((prevData) => ({
             ...prevData,
-            imageUrls: [...prevData.imageUrls, ...urls],
+            imageUrls: [...prevData.imageUrls, ...data.urls],
           }));
           setUploading(false);
         })
-        .catch(() => {
-          setImageUploadError('Image upload failed (2 MB max per image)');
+        .catch((err) => {
+          setImageUploadError(err.message || 'Image upload failed (2 MB max per image)');
           setUploading(false);
         });
     } else {
-      setImageUploadError('You can only upload 6 images per listing');
+      if (files.length === 0) {
+        setImageUploadError('Please select at least one image to upload');
+      } else {
+        setImageUploadError('You can only upload 6 images per listing');
+      }
     }
-  };
-
-  const storeImage = async (file) => {
-    return new Promise((resolve, reject) => {
-      const storage = getStorage(app);
-      const fileName = `${new Date().getTime()}_${file.name}`;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`Upload is ${progress}% done`);
-        },
-        (error) => {
-          reject(error);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            resolve(downloadURL);
-          });
-        }
-      );
-    });
   };
 
   const handleRemoveImage = (index) => {
@@ -122,10 +104,10 @@ export default function CreateListing() {
       const data = await res.json();
       setLoading(false);
       
-      if (!data.success) {
+      if (data.success === false) {
         setError(data.message);
       } else {
-        navigate(`/listing/${data._id}`);
+        navigate('/');
       }
     } catch (err) {
       setError(err.message);
@@ -259,10 +241,11 @@ export default function CreateListing() {
             />
             <button
               type='button'
+              disabled={uploading}
               onClick={handleImageSubmit}
-              className='bg-blue-500 text-white rounded-lg px-4 py-2'
+              className='bg-blue-500 text-white rounded-lg px-4 py-2 disabled:opacity-80'
             >
-              Upload
+              {uploading ? 'Uploading...' : 'Upload'}
             </button>
           </div>
           {uploading && <p className='text-blue-500'>Uploading images...</p>}
@@ -284,8 +267,8 @@ export default function CreateListing() {
           {error && <p className='text-red-500'>{error}</p>}
           <button
             type='submit'
-            className='mt-4 bg-green-500 text-white rounded-lg px-4 py-2'
-            disabled={loading}
+            className='mt-4 bg-green-500 text-white rounded-lg px-4 py-2 disabled:opacity-80'
+            disabled={loading || uploading}
           >
             {loading ? 'Creating...' : 'Create Listing'}
           </button>

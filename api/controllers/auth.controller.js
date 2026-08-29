@@ -2,6 +2,7 @@ import User from "../models/user.model.js"
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import {errorHandler} from '../utils/error.js';
+import { clerkClient, verifyToken } from '@clerk/express';
 
 
 export const signup=async(req,res,next)=>{
@@ -94,4 +95,92 @@ export const signin = async (req, res, next) => {
       next(error);
     }
   };
+
+export const clerkSync = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return next(errorHandler(401, 'Unauthorized'));
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return next(errorHandler(401, 'Unauthorized'));
+    }
+
+    // Verify token using Clerk
+    const verified = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
+
+    const clerkId = verified.sub;
+    if (!clerkId) {
+      return next(errorHandler(403, 'Forbidden'));
+    }
+
+    // Fetch user details from Clerk
+    const clerkUser = await clerkClient.users.getUser(clerkId);
+    const email = clerkUser.emailAddresses[0]?.emailAddress;
+    const avatar = clerkUser.imageUrl;
+
+    // Find or create user in MongoDB
+    let mongoUser = await User.findOne({ clerkId });
+
+    if (!mongoUser) {
+      // Look up by email to link existing user
+      mongoUser = await User.findOne({ email });
+      if (mongoUser) {
+        mongoUser.clerkId = clerkId;
+        if (!mongoUser.avatar) {
+          mongoUser.avatar = avatar;
+        }
+        await mongoUser.save();
+      } else {
+        // Create new user in MongoDB
+        let baseUsername = clerkUser.username || 
+          (clerkUser.firstName && clerkUser.lastName ? `${clerkUser.firstName}${clerkUser.lastName}`.toLowerCase() : '') ||
+          email.split('@')[0];
+        
+        // Sanitize username (alphanumeric only)
+        baseUsername = baseUsername.replace(/[^a-zA-Z0-9]/g, '');
+
+        let username = baseUsername;
+        let userExists = await User.findOne({ username });
+        while (userExists) {
+          username = `${baseUsername}${Math.floor(Math.random() * 10000)}`;
+          userExists = await User.findOne({ username });
+        }
+
+        mongoUser = new User({
+          username,
+          email,
+          password: bcryptjs.hashSync(Math.random().toString(36).slice(-8), 10),
+          avatar: avatar || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+          clerkId,
+        });
+        await mongoUser.save();
+      }
+    } else {
+      // Update email/avatar if they exist and are different
+      let updated = false;
+      if (email && mongoUser.email !== email) {
+        mongoUser.email = email;
+        updated = true;
+      }
+      if (avatar && !mongoUser.avatar) {
+        mongoUser.avatar = avatar;
+        updated = true;
+      }
+      if (updated) {
+        await mongoUser.save();
+      }
+    }
+
+    const { password, ...rest } = mongoUser._doc;
+    res.status(200).json(rest);
+  } catch (error) {
+    console.error('Error in clerkSync:', error);
+    next(error);
+  }
+};
   

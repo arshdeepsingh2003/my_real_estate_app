@@ -25,41 +25,43 @@ const Header = () => {
   }, [location.search]);
 
   return (
-    <header className="bg-gradient-to-r from-blue-200 to-blue-300 backdrop-blur-lg bg-white/50 rounded-lg shadow-md p-4 mx-auto mt-4 max-w-7xl">
-      <div className="flex justify-between items-center p-3">
-        <a href="/" className="text-2xl font-extrabold text-slate-900 flex">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-200 to-blue-300 backdrop-blur-lg bg-white/50 rounded-lg shadow-md py-2 px-4 mx-auto mt-2 max-w-7xl w-[calc(100%-2rem)] xl:w-full">
+      <div className="max-w-6xl mx-auto w-full flex justify-between items-center py-1 px-2">
+        <a href="/" className="text-xl font-extrabold text-slate-900 flex">
           <span className="text-blue-600">Real</span><span className="text-orange-600">Estate</span>
         </a>
-        <form 
-          onSubmit={handleSubmit} 
-          className="flex items-center bg-white/20 backdrop-blur-md rounded-full px-4 py-2 shadow-inner"
-        >
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            className="bg-transparent text-slate-900 placeholder-slate-500 focus:outline-none w-24 sm:w-64"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button type="submit" className="text-blue-600 ml-2">
-            <FaSearch />
-          </button>
-        </form>
-        <ul className="flex items-center gap-6 text-slate-900">
-          <a href="/" className="hidden sm:inline hover:text-blue-600">Home</a>
-          <a href="/about" className="hidden sm:inline hover:text-blue-600">About</a>
-          <a href="/profile">
-            {currentUser ? (
-              <img
-                className="rounded-full h-8 w-8 border-2 border-white shadow-md"
-                src={currentUser.avatar}
-                alt="profile"
-              />
-            ) : (
-              <span className="hover:text-blue-600">Sign In</span>
-            )}
-          </a>
-        </ul>
+        <div className="flex items-center gap-4 sm:gap-6 md:gap-8">
+          <form 
+            onSubmit={handleSubmit} 
+            className="flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-1 shadow-inner"
+          >
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="bg-transparent text-slate-900 placeholder-slate-500 focus:outline-none w-24 sm:w-64"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button type="submit" className="text-blue-600 ml-1">
+              <FaSearch />
+            </button>
+          </form>
+          <ul className="flex items-center gap-3 sm:gap-4 text-slate-900">
+            <a href="/" className="hidden sm:inline hover:text-blue-600">Home</a>
+            <a href="/about" className="hidden sm:inline hover:text-blue-600">About</a>
+            <a href="/profile">
+              {currentUser ? (
+                <img
+                  className="rounded-full h-8 w-8 border-2 border-white shadow-md"
+                  src={currentUser.avatar}
+                  alt="profile"
+                />
+              ) : (
+                <span className="hover:text-blue-600">Sign In</span>
+              )}
+            </a>
+          </ul>
+        </div>
       </div>
     </header>
   );

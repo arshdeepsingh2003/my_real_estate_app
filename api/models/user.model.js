@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
     },
+    clerkId: {
+        type: String,
+        unique: true,
+        sparse: true,
+    },
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

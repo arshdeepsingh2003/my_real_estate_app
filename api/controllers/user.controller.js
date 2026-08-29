@@ -2,6 +2,7 @@ import bcryptjs from 'bcryptjs';
 import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
 import Listing from '../models/listing.models.js';
+import { clerkClient } from '@clerk/express';
 
 export const test = (req, res) => {
   res.json({
@@ -13,6 +14,26 @@ export const updateUser = async (req, res, next) => {
   if (req.user.id !== req.params.id)
     return next(errorHandler(401, 'You can only update your own account!'));
   try {
+    // Sync updates to Clerk if clerkId exists
+    if (req.user.clerkId) {
+      const clerkUpdate = {};
+      if (req.body.username) {
+        clerkUpdate.username = req.body.username;
+      }
+      if (req.body.password) {
+        clerkUpdate.password = req.body.password;
+      }
+      
+      if (Object.keys(clerkUpdate).length > 0) {
+        try {
+          await clerkClient.users.updateUser(req.user.clerkId, clerkUpdate);
+        } catch (clerkErr) {
+          console.error("Clerk user update error:", clerkErr);
+          return next(errorHandler(400, clerkErr.errors?.[0]?.message || 'Failed to update user profile in Clerk'));
+        }
+      }
+    }
+
     if (req.body.password) {
       req.body.password = bcryptjs.hashSync(req.body.password, 10);
     }
@@ -41,8 +62,16 @@ export const deleteUser = async (req, res, next) => {
   if (req.user.id !== req.params.id)
     return next(errorHandler(401, 'You can only delete your own account!'));
   try {
+    // Delete from Clerk if Clerk ID exists
+    if (req.user.clerkId) {
+      try {
+        await clerkClient.users.deleteUser(req.user.clerkId);
+      } catch (clerkErr) {
+        console.error("Clerk user deletion error:", clerkErr);
+      }
+    }
+
     await User.findByIdAndDelete(req.params.id);
-    res.clearCookie('access_token');
     res.status(200).json('User has been deleted!');
   } catch (error) {
     next(error);

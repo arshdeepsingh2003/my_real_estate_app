@@ -1,13 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useRef, useState, useEffect } from 'react';
 import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from 'firebase/storage';
-import { app } from '../firebase';
-import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
@@ -15,9 +8,12 @@ import {
   deleteUserStart,
   deleteUserSuccess,
   signOutUserStart,
+  signOutUserSuccess,
+  signOutUserFailure,
 } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
 
 export default function Profile() {
   const fileRef = useRef(null);
@@ -30,6 +26,7 @@ export default function Profile() {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
+  const { signOut } = useAuth();
 
   useEffect(() => {
     if (file) {
@@ -37,28 +34,49 @@ export default function Profile() {
     }
   }, [file]);
 
-  const handleFileUpload = (file) => {
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + file.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setFilePerc(Math.round(progress));
-      },
-      (error) => {
-        setFileUploadError(true);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-          setFormData({ ...formData, avatar: downloadURL })
-        );
-      }
+  if (!currentUser) {
+    return (
+      <div className='flex justify-center items-center h-screen bg-blue-50'>
+        <div className='text-xl font-semibold text-blue-600 animate-pulse'>Loading profile...</div>
+      </div>
     );
+  }
+
+  const handleFileUpload = async (file) => {
+    if (file.size > 2 * 1024 * 1024) {
+      setFileUploadError('Error: Image must be less than 2MB');
+      return;
+    }
+    setFileUploadError(false);
+    setFilePerc(10);
+
+    const data = new FormData();
+    data.append('images', file);
+
+    try {
+      setFilePerc(50);
+      const res = await fetch('/api/listing/upload?type=profile', {
+        method: 'POST',
+        body: data,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Image upload failed');
+      }
+
+      const uploadResult = await res.json();
+      if (uploadResult.success && uploadResult.urls && uploadResult.urls.length > 0) {
+        setFormData({ ...formData, avatar: uploadResult.urls[0] });
+        setFilePerc(100);
+      } else {
+        throw new Error('Image upload failed');
+      }
+    } catch (error) {
+      console.error('Cloudinary Storage Upload Error:', error);
+      setFileUploadError('Error uploading image (Cloudinary upload failed)');
+      setFilePerc(0);
+    }
   };
 
   const handleChange = (e) => {
@@ -69,7 +87,7 @@ export default function Profile() {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
-      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+      const res = await fetch(`/api/user/update/${currentUser?._id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +110,7 @@ export default function Profile() {
   const handleDeleteUser = async () => {
     try {
       dispatch(deleteUserStart());
-      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+      const res = await fetch(`/api/user/delete/${currentUser?._id}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -109,22 +127,17 @@ export default function Profile() {
   const handleSignOut = async () => {
     try {
       dispatch(signOutUserStart());
-      const res = await fetch('/api/auth/signout');
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(deleteUserFailure(data.message));
-        return;
-      }
-      dispatch(deleteUserSuccess(data));
+      await signOut();
+      dispatch(signOutUserSuccess());
     } catch (error) {
-      dispatch(deleteUserFailure(data.message));
+      dispatch(signOutUserFailure(error.message));
     }
   };
 
   const handleShowListings = async () => {
     try {
       setShowListingsError(false);
-      const res = await fetch(`/api/user/listings/${currentUser._id}`);
+      const res = await fetch(`/api/user/listings/${currentUser?._id}`);
       const data = await res.json();
       if (data.success === false) {
         setShowListingsError(true);
@@ -175,7 +188,7 @@ export default function Profile() {
         />
         <p className='text-sm text-center'>
           {fileUploadError ? (
-            <span className='text-red-600'>Error: Image must be less than 2MB</span>
+            <span className='text-red-600'>{fileUploadError}</span>
           ) : filePerc > 0 && filePerc < 100 ? (
             <span className='text-gray-700'>{`Uploading ${filePerc}%`}</span>
           ) : filePerc === 100 ? (

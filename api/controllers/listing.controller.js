@@ -1,5 +1,7 @@
 import Listing from '../models/listing.models.js';
+import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
+import { uploadToCloudinary } from '../utils/cloudinary.js';
 
 export const createListing = async (req, res, next) => {
   try {
@@ -51,17 +53,34 @@ export const updateListing = async (req, res, next) => {
 };
 
 export const getListing = async (req, res, next) => {
-try {
-  const listing = await Listing.findById(req.params.id);
-  if (!listing) {
-    return next(errorHandler(404, 'Listing not found!'));
-  }
-  res.status(200).json(listing);
-} catch (error) {
-  next(error);
-}
+  try {
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) {
+      return next(errorHandler(404, 'Listing not found!'));
+    }
 
-}
+    let ownerEmail = null;
+    try {
+      if (listing.userRef) {
+        const owner = await User.findById(listing.userRef);
+        if (owner) {
+          ownerEmail = owner.email;
+        }
+      }
+    } catch (userError) {
+      console.error('Error fetching listing owner email:', userError.message);
+    }
+
+    const listingObj = listing.toObject();
+    listingObj.owner = {
+      email: ownerEmail,
+    };
+
+    res.status(200).json(listingObj);
+  } catch (error) {
+    next(error);
+  }
+};
 
 // Controller function to fetch real estate listings with query parameters for filtering, sorting, and pagination.
 export const getListings = async (req, res, next) => {
@@ -121,6 +140,28 @@ export const getListings = async (req, res, next) => {
     return res.status(200).json(listings);
   } catch (error) {
     // If an error occurs, pass it to the error-handling middleware.
+    next(error);
+  }
+};
+
+export const uploadImages = async (req, res, next) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'Please select at least one image' });
+    }
+    
+    const uploadType = req.query.type;
+    const folder = uploadType === 'profile' ? 'estate-app/profiles' : 'estate-app/listings';
+
+    // Upload all files to Cloudinary in parallel
+    const uploadPromises = req.files.map(file => uploadToCloudinary(file.buffer, folder));
+    const urls = await Promise.all(uploadPromises);
+    
+    return res.status(200).json({
+      success: true,
+      urls
+    });
+  } catch (error) {
     next(error);
   }
 };

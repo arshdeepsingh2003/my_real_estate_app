@@ -1,17 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { signInStart, signInFailure, signInSuccess } from '../redux/user/userSlice';
+import { useSignIn } from '@clerk/clerk-react';
 import OAuth from '../components/OAuth';
 
 const SignIn = () => {
+  const { isLoaded, signIn, setActive } = useSignIn();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const { loading, error } = useSelector((state) => state.user);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({
@@ -22,25 +22,28 @@ const SignIn = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isLoaded) return;
     try {
-      dispatch(signInStart());
-      const res = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      setLoading(true);
+      setError(null);
+
+      const result = await signIn.create({
+        identifier: formData.email,
+        password: formData.password,
       });
 
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(signInFailure(data.message));
-        return;
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        navigate('/'); // Navigate to the home page after successful sign-in
+      } else {
+        console.warn('Sign-in status incomplete:', result.status);
+        setError('Verification or additional steps required.');
       }
-      dispatch(signInSuccess(data));
-      navigate('/'); // Navigate to the home page after successful sign-in
-    } catch (error) {
-      dispatch(signInFailure(error.message));
+    } catch (err) {
+      console.error(err);
+      setError(err.errors ? err.errors[0].message : err.message);
+    } finally {
+      setLoading(false);
     }
   };
 

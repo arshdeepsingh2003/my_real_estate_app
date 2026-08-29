@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import {
   FaBath,
   FaBed,
@@ -11,17 +10,14 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from 'react-icons/fa';
-import Contact from '../components/Contact';
 
 export default function Listing() {
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [contact, setContact] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const params = useParams();
-  const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -166,15 +162,20 @@ export default function Listing() {
                 {listing.furnished ? 'Furnished' : 'Unfurnished'}
               </li>
             </ul>
-            {currentUser && listing.userRef !== currentUser._id && !contact && (
-              <button
-                onClick={() => setContact(true)}
-                className='mt-4 bg-blue-600 text-white rounded-lg uppercase hover:bg-blue-500 transition p-3'
-              >
-                Contact landlord
-              </button>
-            )}
-            {contact && <Contact listing={listing} />}
+
+            <div className='mt-6 p-4 bg-gray-50 rounded-lg border border-gray-100 flex flex-wrap items-center gap-2 text-sm sm:text-base'>
+              <span className='font-semibold text-gray-700'>📧 Contact Owner:</span>
+              {listing.owner?.email ? (
+                <a
+                  href={`mailto:${listing.owner.email}`}
+                  className='text-blue-600 hover:underline hover:text-blue-800 font-medium transition duration-200 break-all'
+                >
+                  {listing.owner.email}
+                </a>
+              ) : (
+                <span className='text-gray-500 italic'>Contact information unavailable</span>
+              )}
+            </div>
           </div>
         </div>
       )}
