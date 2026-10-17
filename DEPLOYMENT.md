@@ -4,9 +4,14 @@ This repository is configured as a single Vercel project: Vercel builds the Reac
 
 ## Vercel project settings
 
-- Set the project root to the repository root (the folder containing `vercel.json`).
-- Use the included Vercel build and route configuration; do not override the output directory or install/build commands in the dashboard.
-- Deploy the production branch after adding the environment variables below.
+Use these values so Vercel builds from the repository root and publishes the nested Vite output:
+
+- **Root Directory:** `.` (the repository root containing `vercel.json`; do not select `client/`).
+- **Framework Preset:** `Other` (the Vercel JSON specifies the client build and nested output directory).
+- **Build Command:** `npm install --prefix client && npm run build --prefix client`.
+- **Output Directory:** `client/dist`.
+
+These values match `vercel.json`. If dashboard build/output overrides are enabled, set them to these exact values; otherwise disable those overrides and let `vercel.json` apply. Do not use Vite's default root-level `dist` output. Deploy the production branch after adding the environment variables below.
 
 ## Environment variables
 
