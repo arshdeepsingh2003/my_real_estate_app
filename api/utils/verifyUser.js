@@ -2,6 +2,34 @@ import { clerkClient, verifyToken as clerkVerifyToken } from '@clerk/express';
 import { errorHandler } from './error.js';
 import User from '../models/user.model.js';
 
+export const verifyClerkToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return next(errorHandler(401, 'Unauthorized'));
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return next(errorHandler(401, 'Unauthorized'));
+    }
+
+    const verified = await clerkVerifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
+
+    if (!verified.sub) {
+      return next(errorHandler(403, 'Forbidden'));
+    }
+
+    req.clerkId = verified.sub;
+    next();
+  } catch (error) {
+    console.error('Error verifying Clerk token:', error);
+    return next(errorHandler(403, 'Forbidden'));
+  }
+};
+
 export const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;

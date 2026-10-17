@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
+        trim: true,
         unique: true,
     },
     email: {
@@ -24,7 +25,7 @@ const userSchema = new mongoose.Schema({
         unique: true,
         sparse: true,
     },
-}, { timestamps: true });
+}, { timestamps: true, autoIndex: false });
 
 const User = mongoose.model('User', userSchema);
 export default User;

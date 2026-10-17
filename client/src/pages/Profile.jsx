@@ -114,10 +114,11 @@ export default function Profile() {
         method: 'DELETE',
       });
       const data = await res.json();
-      if (data.success === false) {
-        dispatch(deleteUserFailure(data.message));
+      if (!res.ok || data.success === false) {
+        dispatch(deleteUserFailure(data.message || 'Failed to delete account.'));
         return;
       }
+      await signOut();
       dispatch(deleteUserSuccess(data));
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
@@ -145,7 +146,7 @@ export default function Profile() {
       }
 
       setUserListings(data);
-    } catch (error) {
+    } catch {
       setShowListingsError(true);
     }
   };

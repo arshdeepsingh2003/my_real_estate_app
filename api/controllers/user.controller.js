@@ -59,19 +59,23 @@ export const updateUser = async (req, res, next) => {
   }
 };
 export const deleteUser = async (req, res, next) => {
-  if (req.user.id !== req.params.id)
-    return next(errorHandler(401, 'You can only delete your own account!'));
   try {
-    // Delete from Clerk if Clerk ID exists
-    if (req.user.clerkId) {
-      try {
-        await clerkClient.users.deleteUser(req.user.clerkId);
-      } catch (clerkErr) {
-        console.error("Clerk user deletion error:", clerkErr);
-      }
+    const user = await User.findById(req.params.id);
+    const clerkUser = await clerkClient.users.getUser(req.clerkId);
+    const clerkEmail = clerkUser.emailAddresses[0]?.emailAddress?.toLowerCase();
+    const userEmail = user?.email?.toLowerCase();
+
+    if (user && user.clerkId !== req.clerkId && (!clerkEmail || userEmail !== clerkEmail)) {
+      return next(errorHandler(401, 'You can only delete your own account!'));
     }
 
-    await User.findByIdAndDelete(req.params.id);
+    // A Clerk session can exist without a MongoDB profile; still allow its owner to delete the account.
+    await clerkClient.users.deleteUser(req.clerkId);
+    if (user) {
+      await User.findByIdAndDelete(user._id);
+    } else {
+      await User.deleteOne({ clerkId: req.clerkId });
+    }
     res.status(200).json('User has been deleted!');
   } catch (error) {
     next(error);

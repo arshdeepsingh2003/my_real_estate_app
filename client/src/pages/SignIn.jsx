@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useSignIn } from '@clerk/clerk-react';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import OAuth from '../components/OAuth';
+import { getSignInErrorMessage } from '../utils/auth';
 
 const SignIn = () => {
   const { isLoaded, signIn, setActive } = useSignIn();
@@ -11,9 +13,11 @@ const SignIn = () => {
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
+    setError(null);
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
@@ -41,7 +45,7 @@ const SignIn = () => {
       }
     } catch (err) {
       console.error(err);
-      setError(err.errors ? err.errors[0].message : err.message);
+      setError(getSignInErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -61,17 +65,29 @@ const SignIn = () => {
             onChange={handleChange} 
             required
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            className="border p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
-            id="password" 
-            value={formData.password} 
-            onChange={handleChange} 
-            required
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              className="w-full border p-3 pr-11 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="password"
+              value={formData.password}
+              onChange={handleChange}
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((visible) => !visible)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+            </button>
+          </div>
           <button 
-            disabled={loading} 
+            disabled={loading || !isLoaded} 
             className="bg-blue-600 text-white p-3 rounded-lg uppercase hover:bg-blue-500 transition-colors duration-200 disabled:opacity-50"
           >
             {loading ? 'Loading...' : 'Sign In'}
@@ -79,12 +95,12 @@ const SignIn = () => {
           <OAuth />
         </form>
         <div className="flex gap-2 mt-5 justify-center">
-          <p className="text-gray-600">Don't have an account?</p>
+          <p className="text-gray-600">Don&apos;t have an account?</p>
           <Link to="/sign-up">
             <span className="text-blue-600 font-semibold">Sign Up</span>
           </Link>
         </div>
-        {error && <p className="text-red-500 mt-5 text-center">{error}</p>}
+        {error && <p className="text-red-600 mt-5 text-center" role="alert">{error}</p>}
       </div>
     </div>
   );

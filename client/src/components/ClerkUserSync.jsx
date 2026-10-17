@@ -57,6 +57,11 @@ export default function ClerkUserSync({ children }) {
               const data = await res.json();
               dispatch(signInSuccess(data));
             } else {
+              const data = await res.json().catch(() => null);
+              const message = typeof data?.message === 'string'
+                ? data.message
+                : 'Your account was created, but we could not finish setting up your profile. Please contact support.';
+              window.dispatchEvent(new CustomEvent('auth-sync-error', { detail: message }));
               console.error('Failed to sync Clerk session with MongoDB database.');
             }
           } catch (error) {
