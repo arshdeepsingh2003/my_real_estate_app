@@ -27,4 +27,6 @@ All frontend requests use relative `/api` paths. Vite only configures a developm
 
 ## Deployment checks
 
-After deployment, load a nested client route directly, verify `/api` calls, sign-in and sign-up, listing/image creation, and enquiry email delivery. The current image endpoint receives multipart uploads through a Vercel function; Vercel limits function request payloads, so large multi-image uploads may need a later switch to signed direct-to-Cloudinary uploads.
+After deployment, open `/api/health` on the deployed domain; it should return JSON containing `success: true`. Then test sign-up, sign-in, listing/image creation, and enquiry email delivery. If `/api/health` returns the app's HTML page or a Vercel 404, verify the Vercel project root is the repository root and redeploy this version. If the health endpoint works but account validation fails, check Vercel function logs and confirm `MONGO` is configured and reachable from Vercel.
+
+The current image endpoint receives multipart uploads through a Vercel function; Vercel limits function request payloads, so large multi-image uploads may need a later switch to signed direct-to-Cloudinary uploads.

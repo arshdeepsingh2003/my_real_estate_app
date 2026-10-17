@@ -1,10 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import userRouter from './routes/user.route.js';
-import authRouter from './routes/auth.route.js';
-import listingRouter from './routes/listing.route.js';
-import User from './models/user.model.js';
+import userRouter from '../api/routes/user.route.js';
+import authRouter from '../api/routes/auth.route.js';
+import listingRouter from '../api/routes/listing.route.js';
+import User from '../api/models/user.model.js';
 import cookieParser from 'cookie-parser';
 dotenv.config();
 
@@ -12,8 +12,11 @@ const app = express();
 let databaseConnection;
 
 app.use(express.json());
-
 app.use(cookieParser());
+
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({ success: true, service: 'api' });
+});
 
 const ensureUserIndexes = async () => {
   const indexes = [
@@ -78,6 +81,7 @@ app.use(async (_req, _res, next) => {
     await connectDatabase();
     next();
   } catch (error) {
+    console.error('Database connection failed:', error.message);
     next(error);
   }
 });

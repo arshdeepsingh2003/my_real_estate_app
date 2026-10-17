@@ -108,7 +108,7 @@ const SignUp = () => {
       try {
         validationData = await validationResponse.json();
       } catch {
-        throw new Error('Signup service is unavailable. Make sure the API server is running on port 3000, then try again.');
+        throw new Error('Signup service returned an unexpected response. Check that the API function is deployed, then open /api/health to verify it.');
       }
       if (!validationResponse.ok) {
         const validationMessage = typeof validationData?.message === 'string' ? validationData.message : '';
