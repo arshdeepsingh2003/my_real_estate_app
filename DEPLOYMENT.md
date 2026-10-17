@@ -11,7 +11,9 @@ Use these values so Vercel builds from the repository root and publishes the nes
 - **Build Command:** `npm install --prefix client && npm run build --prefix client`.
 - **Output Directory:** `client/dist`.
 
-These values match `vercel.json`. If dashboard build/output overrides are enabled, set them to these exact values; otherwise disable those overrides and let `vercel.json` apply. Do not use Vite's default root-level `dist` output. Deploy the production branch after adding the environment variables below.
+These values match `vercel.json`. The build runs Vite with `client/` as its working directory, so Vite's `outDir: "dist"` produces `client/dist/`; it does not produce a repository-root `dist/`. `vercel.json` explicitly selects the `Other` framework preset and publishes `client/dist`.
+
+If Vercel still reports **No Output Directory named `dist` found**, it is not applying this repository-root configuration as intended: check that the connected Vercel project points at this repository and that **Root Directory** is `.` (not `client/` or a nested directory). With the root set to `.`, set any enabled Output Directory override to `client/dist` exactly, not `dist`; likewise use the build command above or disable its override. Do not change the root to `client/`, because the API function and `vercel.json` are at the repository root. Do not use Vite's default root-level `dist` output. Deploy the production branch after adding the environment variables below.
 
 ## Environment variables
 
