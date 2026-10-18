@@ -237,11 +237,11 @@ const SignUp = () => {
           <form onSubmit={handleVerifySubmit} className="flex flex-col gap-4">
             <p className="text-center text-gray-600">Please enter the 6-digit verification code sent to your email.</p>
             <p className="text-center text-sm text-gray-600" role="timer" aria-live="off">
-              {verificationExpired && secondsRemaining > 0
-                ? `This verification code has expired. You can resend a new code in ${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}.`
-                : secondsRemaining > 0
-                ? `Enter the code within 1 minute: ${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}`
-                : 'The code entry time has expired. Please resend a new verification code.'}
+              {verificationExpired
+                ? secondsRemaining > 0
+                  ? `Your verification code has expired. Please resend a new code when the timer reaches ${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}.`
+                  : 'Your verification code has expired. Please resend a new code to continue.'
+                : `Enter the code within 1 minute: ${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}`}
             </p>
             {success && <p className="text-green-700 text-center" role="status">{success}</p>}
             <input 
@@ -270,7 +270,7 @@ const SignUp = () => {
               ? 'Sending...'
               : secondsRemaining > 0
                 ? `Resend code in ${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}`
-                : 'Send a new code'}
+                : 'Resend verification code'}
           </button>
           {error && <p className="text-red-500 mt-5 text-center">{error}</p>}
         </div>
