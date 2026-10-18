@@ -2,6 +2,8 @@
 
 This repository is configured as a single Vercel project: Vercel builds the React app as static output and serves the Express API from a Node function. The browser uses same-origin `/api/...` requests, so production does not need a separately configured API URL or proxy.
 
+The only file under `api/` is `api/[...path].js`, Vercel's catch-all Node function entry point. It exports the Express app from `server/app.js`; that function receives all `/api/*` requests. Controllers, routes, models, and utilities live under `server/` so Vercel does not discover them as separate functions. The SPA rewrite applies only to non-API paths; static assets are served normally, and other frontend paths fall back to `client/dist/index.html`.
+
 ## Vercel project settings
 
 Use these values so Vercel builds from the repository root and publishes the nested Vite output:
