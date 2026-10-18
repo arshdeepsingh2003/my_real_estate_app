@@ -2,7 +2,7 @@
 
 This repository is configured as a single Vercel project: Vercel builds the React app as static output and serves the Express API from a Node function. The browser uses same-origin `/api/...` requests, so production does not need a separately configured API URL or proxy.
 
-The only file under `api/` is `api/[...path].js`, Vercel's catch-all Node function entry point. It exports the Express app from `server/app.js`; that function receives all `/api/*` requests. Controllers, routes, models, and utilities live under `server/` so Vercel does not discover them as separate functions. The SPA rewrite applies only to non-API paths; static assets are served normally, and other frontend paths fall back to `client/dist/index.html`.
+The only file under `api/` is `api/backend.js`, the Node function entry point. A Vercel rewrite sends every `/api/*` request to that function and passes the original API path as `__path`; the handler restores the path and original query parameters before dispatching to the Express app in `server/app.js`. Controllers, routes, models, and utilities live under `server/` so Vercel does not discover them as separate functions. The SPA rewrite applies only to non-API paths; static assets are served normally, and other frontend paths fall back to `client/dist/index.html`.
 
 ## Vercel project settings
 
