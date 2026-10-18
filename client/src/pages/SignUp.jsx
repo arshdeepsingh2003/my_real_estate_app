@@ -15,6 +15,7 @@ const SignUp = () => {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationDeadline, setVerificationDeadline] = useState(null);
   const [secondsRemaining, setSecondsRemaining] = useState(60);
+  const [verificationExpired, setVerificationExpired] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [error, setError] = useState('');
@@ -33,8 +34,7 @@ const SignUp = () => {
     const details = `${code} ${message}`.toLowerCase();
 
     if (/expired|timeout|timed out/.test(details)) {
-      setSecondsRemaining(0);
-      setVerificationDeadline(null);
+      setVerificationExpired(true);
       return 'This verification code has expired. Please resend a new code to continue.';
     }
     if (/code.*(incorrect|invalid|wrong)|(incorrect|invalid|wrong).*code|verification_failed|form_code_incorrect/.test(details)) {
@@ -55,7 +55,9 @@ const SignUp = () => {
     if (!verificationDeadline) return undefined;
 
     const updateCountdown = () => {
-      setSecondsRemaining(Math.max(0, Math.ceil((verificationDeadline - Date.now()) / 1000)));
+      const remaining = Math.max(0, Math.ceil((verificationDeadline - Date.now()) / 1000));
+      setSecondsRemaining(remaining);
+      if (remaining === 0) setVerificationExpired(true);
     };
 
     updateCountdown();
@@ -66,6 +68,7 @@ const SignUp = () => {
   const startVerificationTimer = () => {
     setVerificationDeadline(Date.now() + 60_000);
     setSecondsRemaining(60);
+    setVerificationExpired(false);
   };
 
   const handleChange = (e) => {
@@ -163,9 +166,9 @@ const SignUp = () => {
   const handleVerifySubmit = async (e) => {
     e.preventDefault();
     if (!isLoaded) return;
-    if (!verificationDeadline || Date.now() >= verificationDeadline) {
+    if (verificationExpired || !verificationDeadline || Date.now() >= verificationDeadline) {
       setSecondsRemaining(0);
-      setVerificationDeadline(null);
+      setVerificationExpired(true);
       setError('This verification code has expired. Please resend a new code to continue.');
       return;
     }
@@ -234,7 +237,9 @@ const SignUp = () => {
           <form onSubmit={handleVerifySubmit} className="flex flex-col gap-4">
             <p className="text-center text-gray-600">Please enter the 6-digit verification code sent to your email.</p>
             <p className="text-center text-sm text-gray-600" role="timer" aria-live="off">
-              {secondsRemaining > 0
+              {verificationExpired && secondsRemaining > 0
+                ? `This verification code has expired. You can resend a new code in ${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}.`
+                : secondsRemaining > 0
                 ? `Enter the code within 1 minute: ${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}`
                 : 'The code entry time has expired. Please resend a new verification code.'}
             </p>
@@ -249,7 +254,7 @@ const SignUp = () => {
               required
             />
             <button 
-              disabled={loading || secondsRemaining === 0} 
+              disabled={loading || verificationExpired || secondsRemaining === 0}
               className="bg-blue-600 text-white p-3 rounded-lg uppercase hover:bg-blue-500 disabled:opacity-80 transition"
             >
               {loading ? 'Verifying...' : 'Verify'}
@@ -261,7 +266,11 @@ const SignUp = () => {
             disabled={loading || secondsRemaining > 0}
             className={`w-full mt-3 text-blue-700 hover:underline disabled:text-gray-400 disabled:no-underline ${secondsRemaining === 0 && !loading ? 'animate-pulse font-semibold' : ''}`}
           >
-            {loading ? 'Sending...' : 'Send a new code'}
+            {loading
+              ? 'Sending...'
+              : secondsRemaining > 0
+                ? `Resend code in ${String(Math.floor(secondsRemaining / 60)).padStart(2, '0')}:${String(secondsRemaining % 60).padStart(2, '0')}`
+                : 'Send a new code'}
           </button>
           {error && <p className="text-red-500 mt-5 text-center">{error}</p>}
         </div>
